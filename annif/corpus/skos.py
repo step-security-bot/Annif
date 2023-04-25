@@ -4,10 +4,6 @@ import collections
 import os.path
 import shutil
 
-import rdflib
-import rdflib.util
-from rdflib.namespace import OWL, RDF, RDFS, SKOS
-
 import annif.util
 
 from .types import Subject, SubjectCorpus
@@ -17,6 +13,8 @@ def serialize_subjects_to_skos(subjects, path):
     """Create a SKOS representation of the given subjects and serialize it
     into a SKOS/Turtle file with the given path name."""
     import joblib
+    import rdflib
+    from rdflib.namespace import RDF, SKOS
 
     graph = rdflib.Graph()
     graph.namespace_manager.bind("skos", SKOS)
@@ -47,11 +45,18 @@ def serialize_subjects_to_skos(subjects, path):
 class SubjectFileSKOS(SubjectCorpus):
     """A subject corpus that uses SKOS files"""
 
-    PREF_LABEL_PROPERTIES = (SKOS.prefLabel, RDFS.label)
-
     _languages = None
 
     def __init__(self, path):
+        import rdflib
+
+        self.rdflib = rdflib
+        self.OWL = rdflib.namespace.OWL
+        self.RDF = rdflib.namespace.RDF
+        self.RDFS = rdflib.namespace.RDFS
+        self.SKOS = rdflib.namespace.SKOS
+
+        self.PREF_LABEL_PROPERTIES = (self.SKOS.prefLabel, self.RDFS.label)
         self.path = path
         if path.endswith(".dump.gz"):
             import joblib
@@ -89,7 +94,7 @@ class SubjectFileSKOS(SubjectCorpus):
         for concept in self.concepts:
             labels = self._concept_labels(concept)
 
-            notation = self.graph.value(concept, SKOS.notation, None, any=True)
+            notation = self.graph.value(concept, self.SKOS.notation, None, any=True)
             if notation is not None:
                 notation = str(notation)
 
@@ -97,8 +102,8 @@ class SubjectFileSKOS(SubjectCorpus):
 
     @property
     def concepts(self):
-        for concept in self.graph.subjects(RDF.type, SKOS.Concept):
-            if (concept, OWL.deprecated, rdflib.Literal(True)) in self.graph:
+        for concept in self.graph.subjects(self.RDF.type, self.SKOS.Concept):
+            if (concept, self.OWL.deprecated, self.rdflib.Literal(True)) in self.graph:
                 continue
             yield concept
 
@@ -118,6 +123,7 @@ class SubjectFileSKOS(SubjectCorpus):
     def is_rdf_file(path):
         """return True if the path looks like an RDF file that can be loaded
         as SKOS"""
+        import rdflib.util
 
         fmt = rdflib.util.guess_format(path)
         return fmt is not None
