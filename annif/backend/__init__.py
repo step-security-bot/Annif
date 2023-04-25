@@ -1,4 +1,5 @@
 """Registry of backend types for Annif"""
+import os
 
 
 # define functions for lazily importing each backend (alphabetical order)
@@ -37,7 +38,11 @@ def _mllm():
 
 def _nn_ensemble():
     try:
+        os.environ["TF_CPP_MIN_LOG_LEVEL"] = "1"  # Suppress TF warning on import
+
         from . import nn_ensemble
+
+        os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
 
         return nn_ensemble.NNEnsembleBackend
     except ImportError:
