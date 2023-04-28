@@ -4,6 +4,8 @@ import logging
 import os
 import os.path
 
+from flask import Flask
+
 logging.basicConfig()
 logger = logging.getLogger("annif")
 logger.setLevel(level=logging.INFO)
@@ -13,7 +15,6 @@ import annif.backend  # noqa
 
 def create_flask_app(config_name=None):
     """Create a Flask app to be used by the CLI."""
-    from flask import Flask
 
     app = Flask(__name__)
     config_name = _get_config_name(config_name)
@@ -27,22 +28,25 @@ def create_app(config_name=None):
     """Create a Connexion app to be used for the API."""
     # 'cxapp' here is the Connexion application that has a normal Flask app
     # as a property (cxapp.app)
-    import connexion
+    from connexion import ConnexionMiddleware
     from flask_cors import CORS
 
-    from annif.openapi.validation import CustomRequestBodyValidator
+    import annif.registry
+
+    # from annif.openapi.validation import CustomRequestBodyValidator  # TODO Re-enable
 
     specdir = os.path.join(os.path.dirname(__file__), "openapi")
-    cxapp = connexion.App(__name__, specification_dir=specdir)
+    app = Flask(__name__)
+    cxapp = ConnexionMiddleware(app, specification_dir=specdir)
     config_name = _get_config_name(config_name)
     logger.debug(f"creating connexion app with configuration {config_name}")
     cxapp.app.config.from_object(config_name)
     cxapp.app.config.from_envvar("ANNIF_SETTINGS", silent=True)
 
-    validator_map = {
-        "body": CustomRequestBodyValidator,
-    }
-    cxapp.add_api("annif.yaml", validator_map=validator_map)
+    # validator_map = {
+    #     "body": CustomRequestBodyValidator,
+    # }
+    cxapp.add_api("annif.yaml")  # validator_map=validator_map)
 
     # add CORS support
     CORS(cxapp.app)
