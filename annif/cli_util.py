@@ -187,7 +187,7 @@ def _get_completion_choices(param):
 
 
 def complete_param(ctx, param, incomplete):
-    with ctx.obj.load_app().app_context():
+    with ctx.obj.load_app().app.app_context():
         return [
             choice
             for choice in _get_completion_choices(param)

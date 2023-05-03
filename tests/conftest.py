@@ -18,19 +18,19 @@ import annif.registry
 def app():
     # make sure the dummy vocab is in place because many tests depend on it
     subjfile = os.path.join(os.path.dirname(__file__), "corpora", "dummy-subjects.csv")
-    app = annif.create_app(config_name="annif.default_config.TestingConfig")
-    with app.app_context():
+    cxapp = annif.create_app(config_name="annif.default_config.TestingConfig")
+    with cxapp.app.app_context():
         project = annif.registry.get_project("dummy-en")
         # the vocab is needed for both English and Finnish language projects
         vocab = annif.corpus.SubjectFileCSV(subjfile)
         project.vocab.load_vocabulary(vocab)
-    return app
+    return cxapp.app
 
 
 @pytest.fixture(scope="module")
 def app_with_initialize():
-    app = annif.create_app(config_name="annif.default_config.TestingInitializeConfig")
-    return app
+    cxapp = annif.create_app(config_name="annif.default_config.TestingInitializeConfig")
+    return cxapp.app
 
 
 @pytest.fixture
