@@ -5,9 +5,7 @@ import os
 import os.path
 
 import connexion
-
-# from flask import Flask
-# from flask_cors import CORS
+from flask_cors import CORS
 
 # from annif.openapi.validation import CustomRequestBodyValidator
 
@@ -16,6 +14,7 @@ logger = logging.getLogger("annif")
 logger.setLevel(level=logging.INFO)
 
 import annif.backend  # noqa
+import annif.registry  # noqa
 
 
 def create_app(config_name=None):
@@ -41,11 +40,11 @@ def create_app(config_name=None):
     cxapp.add_api("annif.yaml")  # validator_map=validator_map)
 
     # add CORS support
-    # CORS(cxapp.app)
+    CORS(cxapp.app)
 
-    # if cxapp.app.config["INITIALIZE_PROJECTS"]:
-    #     annif.registry.initialize_projects(cxapp.app)
-    #     logger.info("finished initializing projects")
+    if cxapp.app.config["INITIALIZE_PROJECTS"]:
+        annif.registry.initialize_projects(cxapp.app)
+        logger.info("finished initializing projects")
 
     # register the views via blueprints
     from annif.views import bp
