@@ -4,6 +4,7 @@ methods defined in the OpenAPI specification."""
 import importlib
 
 import connexion
+from connexion.decorators import FlaskDecorator
 
 import annif.registry
 from annif.corpus import Document, DocumentList, SubjectSet
@@ -46,6 +47,8 @@ def language_not_supported_error(lang):
     )
 
 
+@annif.app.route("/v1/projects", methods=["GET"])
+@FlaskDecorator
 def list_projects():
     """return a dict with projects formatted according to OpenAPI spec"""
 
