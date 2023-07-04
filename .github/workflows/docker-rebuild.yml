@@ -41,6 +41,7 @@ jobs:
         docker run -v annif-projects:/annif-projects test-image bash -c "
           export ANNIF_PROJECTS=/Annif/projects.cfg.dist &&
           annif eval ensemble-fi /Annif/tests/corpora/archaeology/fulltext" > eval.out
+        echo "Extra line" >> eval.out
     - name: "Diff evaluation results"
       continue-on-error: ${{ inputs.allow_eval_diff }}
       run: diff eval.prev.out eval.out
